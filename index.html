@@ -3,31 +3,170 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Анализатор рынка</title>
+<title>Анализатор рынка — криптовалюты</title>
 <style>
-:root{--bg:#fff;--fg:#1a1a1a;--mut:#666;--line:#ddd;--buy:#0a7d3b;--sell:#b3261e;--hold:#8a6d00}
-@media(prefers-color-scheme:dark){:root{--bg:#121212;--fg:#eee;--mut:#9a9a9a;--line:#333;--buy:#4cd27f;--sell:#ff7b72;--hold:#e3b341}}
-body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--fg);max-width:900px;margin:0 auto;padding:16px}
-h1{font-size:1.4rem}.note{color:var(--mut);font-size:.85rem}
-.wrap{overflow-x:auto}table{border-collapse:collapse;width:100%}
-th,td{padding:8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
-th:first-child,td:first-child{text-align:left}
+:root{--bg:#eef1f7;--card:rgba(255,255,255,.72);--solid:#fff;--fg:#14161f;--mut:#6b7080;--line:#e3e6ee;--acc:#4f46e5;--acc2:#06b6d4;--buy:#059669;--sell:#dc2626;--hold:#b45309;--shadow:0 10px 30px rgba(20,22,31,.08)}
+@media(prefers-color-scheme:dark){:root{--bg:#0b0d14;--card:rgba(21,24,38,.75);--solid:#151826;--fg:#e8eaf2;--mut:#8b91a5;--line:#262b3d;--acc:#818cf8;--acc2:#22d3ee;--buy:#34d399;--sell:#f87171;--hold:#fbbf24;--shadow:0 10px 30px rgba(0,0,0,.45)}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--fg);background:radial-gradient(1000px 500px at 0% -10%,rgba(79,70,229,.18),transparent 60%),radial-gradient(800px 500px at 100% 0%,rgba(6,182,212,.16),transparent 55%),var(--bg);background-attachment:fixed;font-size:15px;-webkit-font-smoothing:antialiased}
+header{position:sticky;top:0;z-index:10;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:var(--card);border-bottom:1px solid var(--line)}
+.top{max-width:1200px;margin:0 auto;padding:12px clamp(12px,3vw,24px);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(1.1rem,2.6vw,1.5rem);font-weight:800;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+nav{display:flex;gap:4px;background:var(--line);padding:4px;border-radius:12px}
+nav button{border:0;background:none;color:var(--fg);padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:600;font-size:14px;transition:background .25s,color .25s,box-shadow .25s}
+nav button.on{background:var(--solid);color:var(--acc);box-shadow:var(--shadow)}
+main{max-width:1200px;margin:0 auto;padding:clamp(12px,3vw,24px)}
+section{animation:fadeUp .45s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.hero{padding:clamp(18px,3vw,28px);border-radius:22px;margin-bottom:16px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12);animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(14px)}}
+.hero h2{margin:0 0 6px;font-size:clamp(1.2rem,3vw,1.7rem)}
+.hero p{margin:0;opacity:.92;max-width:620px;line-height:1.5}
+.card{background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:18px;padding:clamp(14px,2vw,20px);margin-bottom:16px;box-shadow:var(--shadow)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+.stat small{color:var(--mut);font-size:.8rem}
+.stat b{display:block;font-size:clamp(1.2rem,2.5vw,1.6rem);font-variant-numeric:tabular-nums;margin-top:4px}
+.note{color:var(--mut);font-size:.85rem;line-height:1.5}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.field{display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--mut)}
+input,select{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--solid);color:var(--fg);font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(79,70,229,.2)}
+.btn{padding:10px 16px;border:0;border-radius:11px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-weight:600;font-size:14px;cursor:pointer;transition:transform .15s,filter .2s}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--solid);color:var(--fg);border:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:14px}
+.coin{position:relative;background:var(--solid);border:1px solid var(--line);border-radius:18px;padding:16px;cursor:pointer;transition:transform .25s,box-shadow .25s,border-color .25s;overflow:hidden}
+.coin:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:var(--acc)}
+.coin.flash-up{animation:flashUp .9s ease}
+.coin.flash-dn{animation:flashDn .9s ease}
+@keyframes flashUp{0%{background:rgba(5,150,105,.22)}100%{background:var(--solid)}}
+@keyframes flashDn{0%{background:rgba(220,38,38,.22)}100%{background:var(--solid)}}
+.sym{font-weight:800;font-size:1.05rem;letter-spacing:.2px}
+.price{font-size:1.35rem;font-weight:700;margin:8px 0 4px;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:.78rem;font-weight:700;white-space:nowrap}
+.badge.BUY{background:rgba(5,150,105,.15);color:var(--buy)}
+.badge.SELL{background:rgba(220,38,38,.15);color:var(--sell)}
+.badge.HOLD{background:rgba(180,83,9,.15);color:var(--hold)}
+.badge.wait{background:var(--line);color:var(--mut)}
+.chg{font-weight:600;font-size:.92rem}
+.chg small{font-weight:400;color:var(--mut)}
+.pos{color:var(--buy)}.neg{color:var(--sell)}
 .BUY{color:var(--buy);font-weight:700}.SELL{color:var(--sell);font-weight:700}.HOLD{color:var(--hold);font-weight:700}
+.meta{display:flex;justify-content:space-between;gap:8px;font-size:.8rem;color:var(--mut);margin-top:8px;flex-wrap:wrap}
+.spark{width:100%;height:46px;display:block;margin-top:10px}
+.spark.big{height:120px}
+.star{border:0;background:none;font-size:20px;cursor:pointer;color:var(--hold);padding:0;transition:transform .2s}
+.star:hover{transform:scale(1.25)}
+.loader{height:6px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:10px}
+#bar{height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .5s}
+.bar{display:flex;gap:4px;margin:10px 0}
+.bar i{flex:1;height:10px;border-radius:6px;transition:background .4s}
+.reason{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:6px;flex:none}
+.rsi-bar{position:relative;height:10px;border-radius:6px;background:linear-gradient(90deg,var(--buy),var(--line) 30%,var(--line) 70%,var(--sell))}
+.rsi-dot{position:absolute;top:-3px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:var(--fg);border:3px solid var(--solid);transition:left .6s}
+.modal-bg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(5,8,20,.5);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;pointer-events:none;transition:opacity .25s;z-index:30}
+.modal-bg.open{opacity:1;pointer-events:auto}
+.modal{background:var(--solid);color:var(--fg);border-radius:22px;max-width:620px;width:100%;max-height:90vh;overflow:auto;padding:clamp(16px,3vw,26px);box-shadow:var(--shadow);transform:translateY(24px) scale(.97);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.modal-bg.open .modal{transform:none}
+details summary{cursor:pointer;font-size:1rem}
+.hide{display:none}
+@media(max-width:600px){.grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,160px),1fr))}.coin{padding:12px}.price{font-size:1.1rem}.stat b{font-size:1.15rem}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<h1>Анализатор рынка (крипто)</h1>
-<p class="note" id="st">Загрузка живых данных…</p>
-<div class="wrap"><table>
-<thead><tr><th>Актив</th><th>Цена</th><th>RSI(14)</th><th>MACD hist</th><th>SMA50/200</th><th>Балл</th><th>Сигнал</th></tr></thead>
-<tbody id="rows"></tbody></table></div>
-<p class="note">Только информационный анализ на основе простых индикаторов, не инвестиционная рекомендация. Прошлое не гарантирует будущего, риск потери капитала реален.</p>
-<script>
-const ASSETS=["BTC","ETH","SOL","BNB","XRP","ADA","DOGE","AVAX"];
+<header>
+  <div class="top">
+    <h1>Анализатор рынка</h1>
+    <nav>
+      <button data-tab="home" class="on">Home</button>
+      <button data-tab="crypto">Криптовалюты</button>
+    </nav>
+  </div>
+</header>
+<main>
 
-// --- собственные алгоритмы ---
+<section id="tab-home">
+  <div class="hero">
+    <h2>Твоя криптопанель</h2>
+    <p>Добавляй любимые монеты, вводи сумму и смотри, что было бы при разном сценарии. Все цены в франках, данные напрямую с Binance.</p>
+  </div>
+  <div class="card">
+    <div class="row" style="align-items:flex-end">
+      <label class="field">Сумма на монету, CHF<input id="capital" type="number" min="0" value="1000" style="width:160px"></label>
+      <label class="field">Сценарий, %<input id="scen" type="number" value="10" style="width:120px"></label>
+      <label class="field">Добавить монету<input id="pick" list="picks" placeholder="например BTC" style="width:200px"></label>
+      <datalist id="picks"></datalist>
+      <button class="btn" id="addBtn">Добавить</button>
+    </div>
+    <p class="note">Сценарий — что будет, если цена вырастет на указанный процент (минус — если упадёт). Расчёт идёт по каждой монете отдельно.</p>
+  </div>
+  <div class="stats" id="homeStats"></div>
+  <div class="grid" id="homeGrid"></div>
+</section>
+
+<section id="tab-crypto" class="hide">
+  <div class="stats" id="stats"></div>
+  <div class="card row">
+    <input id="search" placeholder="Поиск: BTC, ETH, SOL…" style="flex:1;min-width:180px">
+    <select id="sigF">
+      <option value="">Все сигналы</option>
+      <option value="BUY">Покупка</option>
+      <option value="HOLD">Ожидание</option>
+      <option value="SELL">Продажа</option>
+    </select>
+    <select id="sort">
+      <option value="vol">По общему объёму</option>
+      <option value="ch">По изменению за сутки</option>
+      <option value="price">По цене</option>
+      <option value="name">По названию</option>
+    </select>
+    <span class="note" id="cnt"></span>
+  </div>
+  <div class="card">
+    <div class="note" id="status">Загрузка…</div>
+    <div class="loader"><div id="bar"></div></div>
+  </div>
+  <div class="grid" id="cryptoGrid"></div>
+  <div style="text-align:center;margin:18px 0"><button class="btn ghost" id="more">Показать ещё</button></div>
+  <details class="card">
+    <summary><b>Что означают RSI, MACD, тренд и балл</b></summary>
+    <div class="note" style="margin-top:12px;display:grid;gap:10px">
+      <p><b>RSI</b> — индекс перегрева, число от 0 до 100. Он показывает, не слишком ли цену быстро подняли или опустили за последние 14 дней. Ниже 30 — монету продавали много, возможен отскок вверх. Выше 70 — цену сильно подняли, возможен откат. Между ними — спокойное состояние.</p>
+      <p><b>MACD</b> — показывает, набирает ли цена импульс. Если он направлен вверх, сильнее покупатели. Если вниз — продавцы.</p>
+      <p><b>Тренд</b> — сравнивает среднюю цену за 50 дней со средней за 200 дней. Если короткая выше длинной, цена в восходящем тренде.</p>
+      <p><b>Балл</b> — сумма четырёх проверок от −4 до +4. От +2 — Покупка, от −2 — Продажа, всё между — Ожидание.</p>
+      <p><b>Объём</b> — сколько монет обменяли за последние 250 дней, в долларах переведено во франки. Это общий объём за весь период, а не за сутки.</p>
+    </div>
+  </details>
+</section>
+
+<p class="note">Информационный анализ по простым индикаторам, не инвестиционная рекомендация. Прошлое не гарантирует будущего, риск потери капитала реален.</p>
+</main>
+
+<div class="modal-bg" id="modal"><div class="modal" id="modalBody"></div></div>
+
+<script>
+const BASE="https://api.binance.com";
+const WS="wss://stream.binance.com:9443/ws/!ticker@arr";
+const FX_URL="https://api.frankfurter.app/latest?from=USD&to=CHF";  // курс USD→CHF, без ключа
+const CONC=6;                    // одновременных запросов при расчёте сигналов
+const $=id=>document.getElementById(id);
+
+/* состояние: рыночные данные только в памяти */
+const S={syms:[],tk:{},cl:{},vol:{},pend:{},sig:{},fav:[],filter:"",sort:"vol",sigF:"",limit:60,fx:null,flash:{},done:0,total:0,open:null};
+try{S.fav=JSON.parse(localStorage.getItem("fav")||"[]").filter(x=>typeof x==="string")}catch(e){S.fav=[]}
+const saveFav=()=>{try{localStorage.setItem("fav",JSON.stringify(S.fav))}catch(e){}};
+const T=b=>S.tk[b]||{p:NaN,ch:NaN};
+const chf=usd=>(S.fx&&usd!=null&&!isNaN(usd))?usd*S.fx:NaN;
+
+/* ---------- собственные алгоритмы ---------- */
+function ema(a,n){const k=2/(n+1);let e=a[0];const o=[e];for(let i=1;i<a.length;i++){e=a[i]*k+e*(1-k);o.push(e)}return o}
 const sma=(a,n)=>a.length<n?null:a.slice(-n).reduce((s,x)=>s+x,0)/n;
-function ema(a,n){const k=2/(n+1);let e=a[0];const out=[e];for(let i=1;i<a.length;i++){e=a[i]*k+e*(1-k);out.push(e)}return out}
 function rsi(a,n=14){
   if(a.length<n+1)return null;let g=0,l=0;
   for(let i=1;i<=n;i++){const d=a[i]-a[i-1];d>=0?g+=d:l-=d}
@@ -36,38 +175,277 @@ function rsi(a,n=14){
   return l===0?100:100-100/(1+g/l);
 }
 function macdHist(a){
+  if(a.length<35)return null;
   const f=ema(a,12),s=ema(a,26),m=f.map((x,i)=>x-s[i]),sg=ema(m,9);
   return m[m.length-1]-sg[sg.length-1];
 }
+/* балл из четырёх проверок и понятное объяснение каждой */
 function score(c){
-  let p=0;const r=rsi(c),h=macdHist(c),s50=sma(c,50),s200=sma(c,200),last=c[c.length-1];
-  if(r!==null){if(r<30)p+=1;else if(r>70)p-=1}
-  p+=h>0?1:-1;
-  if(s50&&s200)p+=s50>s200?1:-1;
-  if(s50)p+=last>s50?1:-1;
-  return {p,r,h,s50,s200,last};
+  const r=rsi(c),h=macdHist(c),s50=sma(c,50),s200=sma(c,200),last=c[c.length-1];
+  const R=[];let p=0;
+  if(r===null)R.push({g:0,t:"RSI: слишком мало истории для расчёта"});
+  else if(r<30){p+=1;R.push({g:1,t:`RSI ${r.toFixed(0)}: монету сильно продавали, возможен отскок вверх`})}
+  else if(r>70){p-=1;R.push({g:-1,t:`RSI ${r.toFixed(0)}: цену сильно подняли, возможен откат вниз`})}
+  else R.push({g:0,t:`RSI ${r.toFixed(0)}: спокойный уровень, ни перегрева, ни распродажи`});
+  if(h===null)R.push({g:0,t:"MACD: мало истории для расчёта"});
+  else{const g=h>0?1:-1;p+=g;R.push({g,t:g>0?"MACD: импульс направлен вверх":"MACD: импульс направлен вниз"})}
+  if(s50&&s200){const g=s50>s200?1:-1;p+=g;R.push({g,t:g>0?"Тренд вверх: средняя за 50 дней выше средней за 200":"Тренд вниз: средняя за 50 дней ниже средней за 200"})}
+  else R.push({g:0,t:"Тренд: истории меньше 200 дней"});
+  if(s50){const g=last>s50?1:-1;p+=g;R.push({g,t:g>0?"Цена выше средней за 50 дней":"Цена ниже средней за 50 дней"})}
+  return {p,R,r,h,s50,s200,last};
 }
 const sig=p=>p>=2?"BUY":p<=-2?"SELL":"HOLD";
-const fmt=x=>x>=1?x.toLocaleString("ru-RU",{maximumFractionDigits:2}):x.toPrecision(3);
+const sigRu={BUY:"Покупка",SELL:"Продажа",HOLD:"Ожидание"};
+const strength=p=>Math.abs(p)>=4?"сильный":Math.abs(p)>=2?"средний":"слабый";
 
-// --- живые данные, ничего не сохраняется ---
-async function load(sym){
-  const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}USDT&interval=1d&limit=250`);
-  if(!r.ok)throw new Error(sym+" "+r.status);
-  return (await r.json()).map(k=>+k[4]);
+/* ---------- форматирование (всё в CHF) ---------- */
+const fmtChf=x=>isNaN(x)?"…":"CHF "+x.toLocaleString("ru-RU",{minimumFractionDigits:x<1?2:0,maximumFractionDigits:x<1?6:2});
+const fmtShort=x=>isNaN(x)?"…":"CHF "+x.toLocaleString("ru-RU",{notation:"compact",maximumFractionDigits:1});
+const signed=x=>isNaN(x)?"–":(x>0?"+":"")+x.toLocaleString("ru-RU",{maximumFractionDigits:2})+" CHF";
+const pct=x=>(x==null||isNaN(x))?"–":(x>0?"+":"")+x.toFixed(2)+"%";
+const cls=x=>x>0?"pos":x<0?"neg":"";
+const fmtR=v=>v==null?"–":v.toFixed(0);
+const badge=s=>s?`<span class="badge ${sig(s.p)}">${sigRu[sig(s.p)]}</span>`:`<span class="badge wait">считаю…</span>`;
+const scoreBar=p=>Array.from({length:9},(_,i)=>{
+  const v=i-4,on=v!==0&&(p>0?v>0&&v<=p:p<0&&v<0&&v>=p);
+  const col=v>0?"var(--buy)":v<0?"var(--sell)":"var(--mut)";
+  return `<i style="background:${on?col:"var(--line)"}"></i>`;
+}).join("");
+const spark=(c,big)=>{
+  if(!c||c.length<2)return "";
+  const a=c.slice(-(big?120:60)),mn=Math.min(...a),mx=Math.max(...a),w=200,h=big?120:46;
+  const pts=a.map((v,i)=>`${(i/(a.length-1)*w).toFixed(1)},${(h-((v-mn)/((mx-mn)||1))*(h-6)-3).toFixed(1)}`).join(" ");
+  const col=a[a.length-1]>=a[0]?"var(--buy)":"var(--sell)";
+  return `<svg class="spark${big?" big":""}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" points="${pts}"/></svg>`;
+};
+/* перерисовываем только если разметка изменилась */
+const lastHtml={};
+function setHTML(el,h){if(lastHtml[el.id]!==h){lastHtml[el.id]=h;el.innerHTML=h}}
+
+/* ---------- загрузка ---------- */
+function ensure(b){
+  if(b in S.cl)return Promise.resolve();
+  if(S.pend[b])return S.pend[b];
+  S.pend[b]=fetch(`${BASE}/api/v3/klines?symbol=${b}USDT&interval=1d&limit=250`)
+    .then(r=>{if(!r.ok)throw new Error(r.status);return r.json()})
+    .then(a=>{
+      const c=a.map(k=>+k[4]);
+      S.cl[b]=c;
+      S.vol[b]=a.reduce((s,k)=>s+Number(k[7]),0);   // общий объём в USDT за весь период
+      S.sig[b]=score(c);
+    })
+    .catch(()=>{S.cl[b]=null})
+    .then(()=>{delete S.pend[b];S.done++;renderAll()});
+  return S.pend[b];
 }
-(async()=>{
-  const res=await Promise.allSettled(ASSETS.map(load));
-  const tb=document.getElementById("rows");let ok=0;
-  res.forEach((x,i)=>{
-    const tr=document.createElement("tr");
-    if(x.status!=="fulfilled"){tr.innerHTML=`<td>${ASSETS[i]}</td><td colspan="6">ошибка загрузки</td>`;tb.appendChild(tr);return}
-    ok++;const s=score(x.value),g=sig(s.p);
-    tr.innerHTML=`<td>${ASSETS[i]}</td><td>$${fmt(s.last)}</td><td>${s.r?s.r.toFixed(1):"–"}</td><td>${s.h.toFixed(4)}</td><td>${s.s50&&s.s200?(s.s50>s.s200?"выше":"ниже"):"–"}</td><td>${s.p}</td><td class="${g}">${g==="BUY"?"Покупка":g==="SELL"?"Продажа":"Ожидание"}</td>`;
-    tb.appendChild(tr);
-  });
-  document.getElementById("st").textContent=ok?`Данные получены напрямую из Binance: ${new Date().toLocaleString("ru-RU")}`:"Не удалось получить данные (источник недоступен).";
-})();
+async function scanAll(list){
+  S.total=list.length;S.done=0;
+  let i=0;
+  const run=async()=>{while(i<list.length){await ensure(list[i++])}};
+  await Promise.all(Array.from({length:CONC},run));
+}
+async function loadFx(){
+  try{
+    const j=await (await fetch(FX_URL)).json();
+    S.fx=j.rates.CHF;
+    renderAll();
+  }catch(e){}
+}
+async function init(){
+  loadFx();
+  try{
+    const info=await (await fetch(BASE+"/api/v3/exchangeInfo")).json();
+    S.syms=info.symbols
+      .filter(s=>s.quoteAsset==="USDT"&&s.status==="TRADING"&&!/(UP|DOWN|BULL|BEAR)$/.test(s.baseAsset))
+      .map(s=>s.baseAsset).sort();
+    const all=await (await fetch(BASE+"/api/v3/ticker/24hr")).json();
+    for(const t of all)if(t.symbol.endsWith("USDT"))S.tk[t.symbol.slice(0,-4)]={p:+t.lastPrice,ch:+t.priceChangePercent};
+    $("picks").innerHTML=S.syms.map(b=>`<option value="${b}">`).join("");
+    renderAll();
+    scanAll([...new Set([...S.fav,...S.syms])]);   // сначала избранные, затем все монеты
+  }catch(e){
+    $("status").textContent="Не удалось загрузить данные Binance: "+e.message;
+  }
+}
+
+/* живые цены Binance: все монеты разом, одна секунда */
+function liveWS(){
+  const ws=new WebSocket(WS);
+  ws.onmessage=e=>{
+    for(const t of JSON.parse(e.data)){
+      if(!t.s.endsWith("USDT"))continue;
+      const b=t.s.slice(0,-4),old=S.tk[b]&&S.tk[b].p,np=+t.c;
+      S.tk[b]={p:np,ch:+t.P};
+      if(old&&np!==old)S.flash[b]={dir:np>old?"flash-up":"flash-dn",until:Date.now()+900};
+    }
+  };
+  ws.onclose=()=>setTimeout(liveWS,5000);
+}
+
+/* ---------- избранное ---------- */
+function toggleFav(b){
+  S.fav=S.fav.includes(b)?S.fav.filter(x=>x!==b):[...S.fav,b];
+  saveFav();ensure(b);renderAll();
+}
+
+/* ---------- карточка монеты ---------- */
+function coinCard(b){
+  const t=T(b),s=S.sig[b],c=S.cl[b],f=S.flash[b];
+  const fl=f&&f.until>Date.now()?f.dir:"";
+  return `<div class="coin ${fl}" data-b="${b}">
+    <div class="row" style="justify-content:space-between">
+      <span class="sym">${b}</span>
+      <button class="star" data-fav="${b}" title="В Home">${S.fav.includes(b)?"★":"☆"}</button>
+    </div>
+    <div class="price">${fmtChf(chf(t.p))}</div>
+    <div class="row" style="justify-content:space-between">
+      <span class="chg ${cls(t.ch)}">${pct(t.ch)} <small>за 24 ч</small></span>${badge(s)}
+    </div>
+    ${spark(c)}
+    <div class="meta"><span>Объём: ${fmtShort(chf(S.vol[b]))}</span><span>RSI ${fmtR(s&&s.r)}</span></div>
+  </div>`;
+}
+
+/* ---------- карточка в Home ---------- */
+function homeCard(b){
+  const cap=+$("capital").value||0, scen=+$("scen").value||0;
+  const t=T(b),c=S.cl[b],s=S.sig[b],price=chf(t.p);
+  const qty=price>0?cap/price:NaN;
+  const yr=c&&c.length&&t.p?(t.p/c[0]-1)*100:NaN;
+  return `<div class="coin" data-b="${b}">
+    <div class="row" style="justify-content:space-between"><span class="sym">${b}</span>${badge(s)}</div>
+    <div class="price">${fmtChf(price)}</div>
+    <div class="meta" style="font-size:.9rem;color:var(--fg)"><span>На ${cap} CHF купится:</span><b>${isNaN(qty)?"–":qty.toPrecision(4)} шт.</b></div>
+    <div class="meta" style="font-size:.9rem;color:var(--fg)"><span>За ~250 дн.:</span><b class="${cls(yr)}">${pct(yr)} (${signed(cap*yr/100)})</b></div>
+    <div class="meta" style="font-size:.9rem;color:var(--fg)"><span>Сценарий ${scen}%:</span><b class="${cls(scen)}">${signed(cap*scen/100)}</b></div>
+    ${spark(c)}
+    <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn ghost" data-rm="${b}" style="padding:6px 12px;font-size:13px">Убрать</button></div>
+  </div>`;
+}
+
+/* ---------- рендер ---------- */
+function renderStats(){
+  const cnt={BUY:0,HOLD:0,SELL:0};
+  for(const b of S.syms)if(S.sig[b])cnt[sig(S.sig[b].p)]++;
+  setHTML($("stats"),`
+    <div class="stat"><small>Монет</small><b>${S.syms.length}</b></div>
+    <div class="stat"><small>Покупка</small><b class="pos">${cnt.BUY}</b></div>
+    <div class="stat"><small>Ожидание</small><b style="color:var(--hold)">${cnt.HOLD}</b></div>
+    <div class="stat"><small>Продажа</small><b class="neg">${cnt.SELL}</b></div>
+    <div class="stat"><small>Курс</small><b>${S.fx?"1 USD = "+S.fx.toFixed(3)+" CHF":"…"}</b></div>`);
+}
+function renderCrypto(){
+  const q=S.filter.trim().toUpperCase(),k=S.sort,sf=S.sigF;
+  let list=S.syms.filter(b=>(!q||b.includes(q))&&(!sf||(S.sig[b]&&sig(S.sig[b].p)===sf)));
+  const key=b=>k==="vol"?(S.vol[b]||0):k==="ch"?(T(b).ch||-1e9):k==="price"?(T(b).p||0):0;
+  list=k==="name"?list.sort((a,b)=>a.localeCompare(b)):list.sort((a,b)=>key(b)-key(a));
+  const shown=list.slice(0,S.limit);
+  $("cnt").textContent=`Показано ${shown.length} из ${list.length}`;
+  $("more").style.display=list.length>shown.length?"":"none";
+  setHTML($("cryptoGrid"),shown.map(coinCard).join(""));
+  $("bar").style.width=(S.total?Math.round(S.done/S.total*100):0)+"%";
+  $("status").textContent=!S.total
+    ? "Загрузка списка монет…"
+    : S.done<S.total
+      ? `Считаю сигналы: ${S.done} из ${S.total}. Цены уже обновляются в реальном времени. Курс: ${S.fx?"загружен":"загружается"}.`
+      : `Готово: ${S.total} монет, сигналы посчитаны. Обновлено ${new Date().toLocaleTimeString("ru-RU")}.`;
+  renderStats();
+}
+function renderHome(){
+  const cap=+$("capital").value||0, scen=+$("scen").value||0;
+  if(!S.fav.length){
+    setHTML($("homeStats"),"");
+    setHTML($("homeGrid"),`<div class="card note" style="grid-column:1/-1;text-align:center;padding:40px">Список пуст. Добавь монету в поле выше или нажми ☆ на карточке во вкладке «Криптовалюты».</div>`);
+    return;
+  }
+  const yrs=S.fav.map(b=>{const c=S.cl[b],p=T(b).p;return c&&c.length&&p?(p/c[0]-1)*100:NaN}).filter(x=>!isNaN(x));
+  const avg=yrs.length?yrs.reduce((a,b)=>a+b,0)/yrs.length:NaN;
+  setHTML($("homeStats"),`
+    <div class="stat"><small>Монет в Home</small><b>${S.fav.length}</b></div>
+    <div class="stat"><small>Сумма на монету</small><b>${fmtShort(cap)}</b></div>
+    <div class="stat"><small>Средний доход за ~250 дн.</small><b class="${cls(avg)}">${pct(avg)}</b></div>
+    <div class="stat"><small>Сценарий</small><b class="${cls(scen)}">${scen>0?"+":""}${scen}%</b></div>`);
+  setHTML($("homeGrid"),S.fav.map(homeCard).join(""));
+}
+/* окно с подробностями монеты */
+function openModal(b){
+  S.open=b;
+  const t=T(b),s=S.sig[b],c=S.cl[b],isFav=S.fav.includes(b);
+  const yr=c&&c.length&&t.p?(t.p/c[0]-1)*100:NaN;
+  const g=s?sig(s.p):null;
+  const plain={BUY:"Большинство показателей говорят о росте. Это подсказка, а не гарантия.",SELL:"Большинство показателей говорят о падении. Это подсказка, а не гарантия.",HOLD:"Показатели смешанные. Разумнее подождать более ясного сигнала."};
+  const reasons=s?s.R.map(r=>`<div class="reason"><span class="dot" style="background:${r.g>0?"var(--buy)":r.g<0?"var(--sell)":"var(--mut)"}"></span><span>${r.t}</span></div>`).join(""):`<p class="note">Считаю данные…</p>`;
+  const rsiPos=s&&s.r!=null?Math.max(0,Math.min(100,s.r)):50;
+  $("modalBody").innerHTML=`
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">${b}</h2>
+      <button class="btn ghost" data-close>Закрыть</button>
+    </div>
+    <div class="price" style="font-size:2rem">${fmtChf(chf(t.p))}</div>
+    <div class="row"><span class="chg ${cls(t.ch)}">${pct(t.ch)} <small>за 24 ч</small></span>${badge(s)}</div>
+    ${spark(c,true)}
+    <h3 style="margin:18px 0 6px">${s?`${sigRu[g]} · сила: ${strength(s.p)}`:"Оценка готовится"}</h3>
+    <div class="bar">${s?scoreBar(s.p):""}</div>
+    <p class="note">${s?`Балл ${s.p} из 4. ${plain[g]}`:""}</p>
+    ${reasons}
+    <div style="margin:18px 0 6px"><b>RSI</b> <span class="note">(0 — монету продали слишком сильно, 100 — перекупили)</span></div>
+    <div class="rsi-bar"><div class="rsi-dot" style="left:${rsiPos}%"></div></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:18px">
+      <div class="stat"><small>Объём за 250 дн.</small><b>${fmtShort(chf(S.vol[b]))}</b></div>
+      <div class="stat"><small>Доход за ~250 дн.</small><b class="${cls(yr)}">${pct(yr)}</b></div>
+    </div>
+    <div class="row" style="margin-top:18px;justify-content:flex-end">
+      <button class="btn" data-fav="${b}">${isFav?"★ Убрать из Home":"☆ Добавить в Home"}</button>
+    </div>`;
+  $("modal").classList.add("open");
+}
+function closeModal(){S.open=null;$("modal").classList.remove("open")}
+function renderAll(){
+  renderCrypto();
+  renderHome();
+  if(S.open&&$("modal").classList.contains("open"))openModal(S.open);
+}
+
+/* ---------- события ---------- */
+$("addBtn").onclick=()=>{
+  const b=$("pick").value.trim().toUpperCase();
+  if(S.syms.includes(b)&&!S.fav.includes(b))toggleFav(b);
+  $("pick").value="";
+};
+$("pick").onkeydown=e=>{if(e.key==="Enter")$("addBtn").click()};
+$("search").oninput=e=>{S.filter=e.target.value;renderCrypto()};
+$("sigF").onchange=e=>{S.sigF=e.target.value;renderCrypto()};
+$("sort").onchange=e=>{S.sort=e.target.value;renderCrypto()};
+$("more").onclick=()=>{S.limit+=60;renderCrypto()};
+$("cryptoGrid").onclick=e=>{
+  const star=e.target.closest("[data-fav]");
+  if(star){toggleFav(star.dataset.fav);return}
+  const card=e.target.closest("[data-b]");
+  if(card)openModal(card.dataset.b);
+};
+$("homeGrid").onclick=e=>{
+  const rm=e.target.closest("[data-rm]");
+  if(rm){S.fav=S.fav.filter(x=>x!==rm.dataset.rm);saveFav();renderAll();return}
+  const card=e.target.closest("[data-b]");
+  if(card)openModal(card.dataset.b);
+};
+$("modal").onclick=e=>{
+  if(e.target.id==="modal"||e.target.closest("[data-close]"))return closeModal();
+  const f=e.target.closest("[data-fav]");
+  if(f){toggleFav(f.dataset.fav);openModal(f.dataset.fav)}
+};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
+$("capital").oninput=renderHome;
+$("scen").oninput=renderHome;
+document.querySelectorAll("nav button").forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===btn));
+  ["home","crypto"].forEach(t=>$("tab-"+t).classList.toggle("hide",t!==btn.dataset.tab));
+});
+
+/* ---------- старт ---------- */
+liveWS();
+init();
+setInterval(renderAll,1000);
 </script>
 </body>
 </html>
