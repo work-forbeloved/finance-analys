@@ -1,1 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Анализатор рынка</title>
+<style>
+:root{--bg:#fff;--fg:#1a1a1a;--mut:#666;--line:#ddd;--buy:#0a7d3b;--sell:#b3261e;--hold:#8a6d00}
+@media(prefers-color-scheme:dark){:root{--bg:#121212;--fg:#eee;--mut:#9a9a9a;--line:#333;--buy:#4cd27f;--sell:#ff7b72;--hold:#e3b341}}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--fg);max-width:900px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem}.note{color:var(--mut);font-size:.85rem}
+.wrap{overflow-x:auto}table{border-collapse:collapse;width:100%}
+th,td{padding:8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+.BUY{color:var(--buy);font-weight:700}.SELL{color:var(--sell);font-weight:700}.HOLD{color:var(--hold);font-weight:700}
+</style>
+</head>
+<body>
+<h1>Анализатор рынка (крипто)</h1>
+<p class="note" id="st">Загрузка живых данных…</p>
+<div class="wrap"><table>
+<thead><tr><th>Актив</th><th>Цена</th><th>RSI(14)</th><th>MACD hist</th><th>SMA50/200</th><th>Балл</th><th>Сигнал</th></tr></thead>
+<tbody id="rows"></tbody></table></div>
+<p class="note">Только информационный анализ на основе простых индикаторов, не инвестиционная рекомендация. Прошлое не гарантирует будущего, риск потери капитала реален.</p>
+<script>
+const ASSETS=["BTC","ETH","SOL","BNB","XRP","ADA","DOGE","AVAX"];
 
+// --- собственные алгоритмы ---
+const sma=(a,n)=>a.length<n?null:a.slice(-n).reduce((s,x)=>s+x,0)/n;
+function ema(a,n){const k=2/(n+1);let e=a[0];const out=[e];for(let i=1;i<a.length;i++){e=a[i]*k+e*(1-k);out.push(e)}return out}
+function rsi(a,n=14){
+  if(a.length<n+1)return null;let g=0,l=0;
+  for(let i=1;i<=n;i++){const d=a[i]-a[i-1];d>=0?g+=d:l-=d}
+  g/=n;l/=n;
+  for(let i=n+1;i<a.length;i++){const d=a[i]-a[i-1];g=(g*(n-1)+Math.max(d,0))/n;l=(l*(n-1)+Math.max(-d,0))/n}
+  return l===0?100:100-100/(1+g/l);
+}
+function macdHist(a){
+  const f=ema(a,12),s=ema(a,26),m=f.map((x,i)=>x-s[i]),sg=ema(m,9);
+  return m[m.length-1]-sg[sg.length-1];
+}
+function score(c){
+  let p=0;const r=rsi(c),h=macdHist(c),s50=sma(c,50),s200=sma(c,200),last=c[c.length-1];
+  if(r!==null){if(r<30)p+=1;else if(r>70)p-=1}
+  p+=h>0?1:-1;
+  if(s50&&s200)p+=s50>s200?1:-1;
+  if(s50)p+=last>s50?1:-1;
+  return {p,r,h,s50,s200,last};
+}
+const sig=p=>p>=2?"BUY":p<=-2?"SELL":"HOLD";
+const fmt=x=>x>=1?x.toLocaleString("ru-RU",{maximumFractionDigits:2}):x.toPrecision(3);
+
+// --- живые данные, ничего не сохраняется ---
+async function load(sym){
+  const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}USDT&interval=1d&limit=250`);
+  if(!r.ok)throw new Error(sym+" "+r.status);
+  return (await r.json()).map(k=>+k[4]);
+}
+(async()=>{
+  const res=await Promise.allSettled(ASSETS.map(load));
+  const tb=document.getElementById("rows");let ok=0;
+  res.forEach((x,i)=>{
+    const tr=document.createElement("tr");
+    if(x.status!=="fulfilled"){tr.innerHTML=`<td>${ASSETS[i]}</td><td colspan="6">ошибка загрузки</td>`;tb.appendChild(tr);return}
+    ok++;const s=score(x.value),g=sig(s.p);
+    tr.innerHTML=`<td>${ASSETS[i]}</td><td>$${fmt(s.last)}</td><td>${s.r?s.r.toFixed(1):"–"}</td><td>${s.h.toFixed(4)}</td><td>${s.s50&&s.s200?(s.s50>s.s200?"выше":"ниже"):"–"}</td><td>${s.p}</td><td class="${g}">${g==="BUY"?"Покупка":g==="SELL"?"Продажа":"Ожидание"}</td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById("st").textContent=ok?`Данные получены напрямую из Binance: ${new Date().toLocaleString("ru-RU")}`:"Не удалось получить данные (источник недоступен).";
+})();
+</script>
+</body>
+</html>
